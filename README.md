@@ -22,7 +22,7 @@ A collection of example applications built with [Zog.js](https://zogjs.com).
 
 ## View All Examples
 
-Visit the [examples index page](./index.html) to browse and try all examples.
+Visit the [examples index page](https://zogjs.com/examples) to browse and try all examples.
 
 ---
 
