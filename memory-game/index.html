@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Memory Game - Zog.js</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .game-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 40px;
+      max-width: 700px;
+      width: 100%;
+    }
+
+    .game-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    h1 {
+      color: #2d3436;
+      font-size: 32px;
+      margin-bottom: 20px;
+    }
+
+    .game-stats {
+      display: flex;
+      justify-content: center;
+      gap: 30px;
+      margin-bottom: 20px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-label {
+      color: #636e72;
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .stat-value {
+      color: #667eea;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+
+    button:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    .card {
+      aspect-ratio: 1;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 12px;
+      cursor: pointer;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .card.flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card.flipped:hover {
+      transform: rotateY(180deg) scale(1.05);
+    }
+
+    .card.matched {
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      cursor: default;
+      opacity: 0.6;
+    }
+
+    .card.matched:hover {
+      transform: none;
+    }
+
+    .card-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      font-size: 48px;
+    }
+
+    .card-front {
+      background: white;
+      transform: rotateY(180deg);
+    }
+
+    .card-back {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 32px;
+    }
+
+    .win-message {
+      text-align: center;
+      padding: 30px;
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      border-radius: 12px;
+      color: white;
+      margin-top: 20px;
+      animation: slideDown 0.5s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .win-message h2 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .win-message p {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .game-board {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+      }
+
+      .card-face {
+        font-size: 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="game-container">
+      <div class="game-header">
+        <h1>🧠 Memory Game</h1>
+        
+        <div class="game-stats">
+          <div class="stat">
+            <div class="stat-label">Moves</div>
+            <div class="stat-value">{{ moves }}</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Matches</div>
+            <div class="stat-value">{{ matches }} / {{ totalPairs }}</div>
+          </div>
+        </div>
+
+        <button @click="resetGame">🔄 New Game</button>
+      </div>
+
+      <!-- Game Board -->
+      <div class="game-board">
+        <div 
+          class="card"
+          z-for="card in cards"
+          :key="card.id"
+          :class="{ flipped: card.isFlipped, matched: card.isMatched }"
+          @click="flipCard(card.value.id)"
+        >
+          <div class="card-face card-back">❓</div>
+          <div class="card-face card-front">{{ card.emoji }}</div>
+        </div>
+      </div>
+
+      <!-- Win Message -->
+      <div class="win-message" z-if="isGameWon">
+        <h2>🎉 Congratulations!</h2>
+        <p>You won in {{ moves }} moves!</p>
+        <button @click="resetGame">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Zog.js from CDN -->
+  <script type="module">
+    import { createApp, ref, reactive, computed } from 'https://cdn.zogjs.com/zog.es.js';
+
+    createApp(() => {
+      // ===========================
+      // STATE
+      // ===========================
+      
+      // Available emojis for cards
+      const emojis = ['🍎', '🍌', '🍇', '🍊', '🍓', '🍉', '🍒', '🥝'];
+      
+      // Array of card objects
+      // Each card: { id, emoji, isFlipped, isMatched }
+      const cards = reactive([]);
+      
+      // Currently flipped cards (max 2)
+      const flippedCards = reactive([]);
+      
+      // Game statistics
+      const moves = ref(0);
+      const matches = ref(0);
+      
+      // Game state flags
+      const isChecking = ref(false);
+      
+      // Counter for unique card IDs
+      let nextCardId = 1;
+
+      // ===========================
+      // COMPUTED PROPERTIES
+      // ===========================
+      
+      // Total number of pairs
+      const totalPairs = computed(() => emojis.length);
+      
+      // Check if game is won
+      const isGameWon = computed(() => {
+        return matches.value === totalPairs.value;
+      });
+
+      // ===========================
+      // GAME METHODS
+      // ===========================
+      
+      /**
+       * Initialize the game
+       * Creates pairs of cards and shuffles them
+       */
+      function initGame() {
+        // Clear existing cards
+        cards.splice(0, cards.length);
+        
+        // Create pairs of cards
+        const cardPairs = [];
+        emojis.forEach(emoji => {
+          // First card of the pair
+          cardPairs.push({
+            id: nextCardId++,
+            emoji: emoji,
+            isFlipped: false,
+            isMatched: false
+          });
+          // Second card of the pair
+          cardPairs.push({
+            id: nextCardId++,
+            emoji: emoji,
+            isFlipped: false,
+            isMatched: false
+          });
+        });
+        
+        // Shuffle cards using Fisher-Yates algorithm
+        const shuffled = shuffleArray(cardPairs);
+        
+        // Add shuffled cards to reactive array
+        shuffled.forEach(card => cards.push(card));
+        
+        // Reset game state
+        moves.value = 0;
+        matches.value = 0;
+        flippedCards.splice(0, flippedCards.length);
+        isChecking.value = false;
+      }
+      
+      /**
+       * Shuffle array using Fisher-Yates algorithm
+       * @param {Array} array - Array to shuffle
+       * @returns {Array} Shuffled array
+       */
+      function shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      }
+      
+      /**
+       * Flip a card
+       * @param {number} cardId - ID of card to flip
+       */
+      function flipCard(cardId) {
+        // Prevent flipping during checking
+        if (isChecking.value) return;
+        
+        // Find the card by ID
+        const card = cards.find(c => c.id === cardId);
+        if (!card) return;
+        
+        // Prevent flipping already matched or flipped cards
+        if (card.isMatched || card.isFlipped) return;
+        
+        // Prevent flipping more than 2 cards
+        if (flippedCards.length >= 2) return;
+        
+        // Flip the card
+        card.isFlipped = true;
+        flippedCards.push(cardId);
+        
+        // Check for match when 2 cards are flipped
+        if (flippedCards.length === 2) {
+          moves.value++;
+          isChecking.value = true;
+          
+          // Wait a bit before checking (for animation)
+          setTimeout(() => {
+            checkMatch();
+          }, 1000);
+        }
+      }
+      
+      /**
+       * Check if two flipped cards match
+       */
+      function checkMatch() {
+        // Get the two flipped cards
+        const card1 = cards.find(c => c.id === flippedCards[0]);
+        const card2 = cards.find(c => c.id === flippedCards[1]);
+        
+        if (!card1 || !card2) {
+          resetFlipped();
+          return;
+        }
+        
+        // Check if emojis match
+        if (card1.emoji === card2.emoji) {
+          // Match found!
+          card1.isMatched = true;
+          card2.isMatched = true;
+          matches.value++;
+        } else {
+          // No match - flip cards back
+          card1.isFlipped = false;
+          card2.isFlipped = false;
+        }
+        
+        // Reset flipped cards array
+        resetFlipped();
+      }
+      
+      /**
+       * Reset flipped cards state
+       */
+      function resetFlipped() {
+        flippedCards.splice(0, flippedCards.length);
+        isChecking.value = false;
+      }
+      
+      /**
+       * Reset game and start new game
+       */
+      function resetGame() {
+        initGame();
+      }
+
+      // ===========================
+      // INITIALIZE GAME ON MOUNT
+      // ===========================
+      
+      // Start the game when app mounts
+      initGame();
+
+      // ===========================
+      // RETURN SCOPE
+      // ===========================
+      
+      return {
+        // State
+        cards,
+        moves,
+        matches,
+        
+        // Computed
+        totalPairs,
+        isGameWon,
+        
+        // Methods
+        flipCard,
+        resetGame
+      };
+    }).mount('#app');
+  </script>
+</body>
+</html>
