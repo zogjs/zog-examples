@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zog.js Todo List Example</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .app-container {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 600px;
+      padding: 30px;
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    /* Input Section */
+    .input-section {
+      margin-bottom: 25px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 16px;
+      margin-bottom: 10px;
+      transition: border-color 0.3s;
+    }
+
+    input[type="text"]:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #5568d3;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .btn-small {
+      padding: 5px 12px;
+      font-size: 12px;
+      margin-left: 5px;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    /* Label Management */
+    .label-manager {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+    }
+
+    .label-manager h3 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .label-input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .color-input {
+      width: 50px;
+      height: 38px;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .labels-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .label-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 12px;
+      color: white;
+    }
+
+    /* Todo Item */
+    .todo-item {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: transform 0.2s;
+    }
+
+    .todo-item:hover {
+      transform: translateX(5px);
+    }
+
+    .todo-item.completed {
+      opacity: 0.6;
+    }
+
+    .todo-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      margin-top: 2px;
+    }
+
+    .todo-content {
+      flex: 1;
+    }
+
+    .todo-text {
+      font-size: 16px;
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .todo-text.completed {
+      text-decoration: line-through;
+      color: #999;
+    }
+
+    .todo-labels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 8px;
+    }
+
+    .label-select {
+      padding: 4px 8px;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-right: 5px;
+    }
+
+    /* Stats */
+    .stats {
+      text-align: center;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 6px;
+      margin-top: 20px;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="app-container">
+      <h1>{{ appTitle }}</h1>
+
+      <!-- Label Manager Section -->
+      <div class="label-manager">
+        <h3>Manage Labels</h3>
+        <div class="label-input-group">
+          <input 
+            type="text" 
+            z-model="newLabelName" 
+            placeholder="Label name..."
+            @keyup.enter="addLabel"
+          />
+          <input 
+            type="color" 
+            class="color-input"
+            z-model="newLabelColor"
+          />
+          <button @click="addLabel">Add Label</button>
+        </div>
+        
+        <div class="labels-list" z-if="labels.length > 0">
+          <div 
+            class="label-item" 
+            z-for="label in labels" 
+            :key="label.id"
+            :style="{ backgroundColor: label.color }"
+          >
+            <span>{{ label.name }}</span>
+            <button 
+              class="btn-small btn-danger" 
+              @click="removeLabel(label.id)"
+            >×</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Todo Input Section -->
+      <div class="input-section">
+        <input 
+          type="text" 
+          z-model="newTodo" 
+          placeholder="What needs to be done?"
+          @keyup="e.key === 'Enter' && addTodo()"
+        />
+        <button @click="addTodo">Add Todo</button>
+      </div>
+
+      <!-- Todo List -->
+      <div z-if="todos.length > 0">
+        <div 
+          class="todo-item" 
+          z-for="(todo, index) in todos" 
+          :key="todo.id"
+          :class="{ completed: todo.completed }"
+        >
+          <!-- Checkbox for completion -->
+          <input 
+            type="checkbox" 
+            class="todo-checkbox"
+            :checked="todo.completed"
+            @change="toggleTodo(index)"
+          />
+          
+          <div class="todo-content">
+            <!-- Todo text -->
+            <div 
+              class="todo-text" 
+              :class="{ completed: todo.completed }"
+            >
+              {{ todo.text }}
+            </div>
+            
+            <!-- Todo labels -->
+            <div class="todo-labels" z-if="todo.labels.length > 0">
+              <span 
+                class="label-item" 
+                z-for="labelId in todo.labels"
+                :key="labelId"
+                :style="{ backgroundColor: getLabelColor(labelId) }"
+              >
+                {{ getLabelName(labelId) }}
+                <button 
+                  class="btn-small" 
+                  @click="removeLabelFromTodo(index, labelId)"
+                  style="background: rgba(0,0,0,0.2)"
+                >×</button>
+              </span>
+            </div>
+            
+            <!-- Label selector -->
+            <div z-if="labels.length > 0">
+              <select 
+                class="label-select"
+                @change="addLabelToTodo(index, $event.target.value)"
+              >
+                <option value="">+ Add label</option>
+                <option 
+                  z-for="label in getAvailableLabels(index)" 
+                  :key="label.id"
+                  :value="label.id"
+                >
+                  {{ label.name }}
+                </option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- Delete button -->
+          <button 
+            class="btn-small btn-danger" 
+            @click="removeTodo(index)"
+          >Delete</button>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" z-else>
+        <p>No todos yet. Add one above! 🎯</p>
+      </div>
+
+      <!-- Statistics -->
+      <div class="stats" z-if="todos.length > 0">
+        <strong>{{ completedCount }}</strong> of <strong>{{ totalCount }}</strong> completed
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Zog.js from CDN -->
+  <script type="module">
+    import { createApp, ref, reactive, computed } from 'https://cdn.zogjs.com/zog.es.js';
+
+    createApp(() => {
+      // ===========================
+      // STATE - Application Data
+      // ===========================
+      
+      const appTitle = ref('Todo List with Labels');
+      
+      // Input field for new todo
+      const newTodo = ref('');
+      
+      // Array of todo items
+      // Each todo: { id, text, completed, labels: [labelId1, labelId2, ...] }
+      const todos = reactive([]);
+      
+      // Label management
+      const newLabelName = ref('');
+      const newLabelColor = ref('#667eea');
+      
+      // Array of available labels
+      // Each label: { id, name, color }
+      const labels = reactive([
+        { id: 1, name: 'Work', color: '#3498db' },
+        { id: 2, name: 'Personal', color: '#2ecc71' },
+        { id: 3, name: 'Urgent', color: '#e74c3c' }
+      ]);
+      
+      // Counter for generating unique IDs
+      let nextTodoId = 1;
+      let nextLabelId = 4; // Start after initial labels
+
+      // ===========================
+      // COMPUTED PROPERTIES
+      // ===========================
+      
+      // Total number of todos
+      const totalCount = computed(() => todos.length);
+      
+      // Number of completed todos
+      const completedCount = computed(() => {
+        return todos.filter(todo => todo.completed).length;
+      });
+
+      // ===========================
+      // TODO METHODS
+      // ===========================
+      
+      /**
+       * Add a new todo item
+       * Important: Use .value for refs in JS code
+       */
+      function addTodo() {
+        // Check if input is not empty (trim whitespace)
+        if (newTodo.value.trim()) {
+          todos.push({
+            id: nextTodoId++,
+            text: newTodo.value.trim(),
+            completed: false,
+            labels: [] // Empty array of label IDs
+          });
+          
+          // Clear input field after adding
+          newTodo.value = '';
+        }
+      }
+      
+      /**
+       * Toggle todo completion status
+       * @param {number} index - Index of todo in array
+       */
+      function toggleTodo(index) {
+        // Directly mutate reactive array item
+        todos[index].completed = !todos[index].completed;
+      }
+      
+      /**
+       * Remove a todo item
+       * @param {number} index - Index of todo to remove
+       */
+      function removeTodo(index) {
+        // Use splice to remove item from reactive array
+        todos.splice(index, 1);
+      }
+
+      // ===========================
+      // LABEL METHODS
+      // ===========================
+      
+      /**
+       * Add a new label
+       */
+      function addLabel() {
+        if (newLabelName.value.trim()) {
+          labels.push({
+            id: nextLabelId++,
+            name: newLabelName.value.trim(),
+            color: newLabelColor.value
+          });
+          
+          // Reset inputs
+          newLabelName.value = '';
+          newLabelColor.value = '#667eea';
+        }
+      }
+      
+      /**
+       * Remove a label and clean it from all todos
+       * @param {number} labelId - ID of label to remove
+       */
+      function removeLabel(labelId) {
+        // Remove label from labels array
+        const labelIndex = labels.findIndex(l => l.id === labelId);
+        if (labelIndex > -1) {
+          labels.splice(labelIndex, 1);
+        }
+        
+        // Remove this label from all todos
+        todos.forEach(todo => {
+          const labelIdx = todo.labels.indexOf(labelId);
+          if (labelIdx > -1) {
+            todo.labels.splice(labelIdx, 1);
+          }
+        });
+      }
+      
+      /**
+       * Add a label to a specific todo
+       * @param {number} todoIndex - Index of todo
+       * @param {string} labelId - ID of label (from select value)
+       */
+      function addLabelToTodo(todoIndex, labelId) {
+        // Convert string to number
+        const id = parseInt(labelId);
+        
+        if (id && !todos[todoIndex].labels.includes(id)) {
+          todos[todoIndex].labels.push(id);
+        }
+      }
+      
+      /**
+       * Remove a label from a specific todo
+       * @param {number} todoIndex - Index of todo
+       * @param {number} labelId - ID of label to remove
+       */
+      function removeLabelFromTodo(todoIndex, labelId) {
+        const labelIdx = todos[todoIndex].labels.indexOf(labelId);
+        if (labelIdx > -1) {
+          todos[todoIndex].labels.splice(labelIdx, 1);
+        }
+      }
+      
+      /**
+       * Get available labels for a todo (labels not already applied)
+       * @param {number} todoIndex - Index of todo
+       * @returns {Array} Array of available label objects
+       */
+      function getAvailableLabels(todoIndex) {
+        const todoLabels = todos[todoIndex].labels;
+        return labels.filter(label => !todoLabels.includes(label.id));
+      }
+      
+      /**
+       * Get label name by ID
+       * @param {number} labelId - ID of label
+       * @returns {string} Label name or empty string
+       */
+      function getLabelName(labelId) {
+        const label = labels.find(l => l.id === labelId);
+        return label ? label.name : '';
+      }
+      
+      /**
+       * Get label color by ID
+       * @param {number} labelId - ID of label
+       * @returns {string} Label color or default color
+       */
+      function getLabelColor(labelId) {
+        const label = labels.find(l => l.id === labelId);
+        return label ? label.color : '#999';
+      }
+
+      // ===========================
+      // RETURN SCOPE
+      // ===========================
+      // All state and methods must be returned to be accessible in template
+      // Note: In templates, refs are auto-unwrapped (use {{ newTodo }} not {{ newTodo.value }})
+      
+      return {
+        // State
+        appTitle,
+        newTodo,
+        todos,
+        labels,
+        newLabelName,
+        newLabelColor,
+        
+        // Computed
+        totalCount,
+        completedCount,
+        
+        // Todo methods
+        addTodo,
+        toggleTodo,
+        removeTodo,
+        
+        // Label methods
+        addLabel,
+        removeLabel,
+        addLabelToTodo,
+        removeLabelFromTodo,
+        getAvailableLabels,
+        getLabelName,
+        getLabelColor
+      };
+    }).mount('#app');
+  </script>
+</body>
+</html>
