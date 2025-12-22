@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Counter - Zog.js</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .counter-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 60px;
+      text-align: center;
+      min-width: 400px;
+      animation: slideUp 0.5s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      color: #2d3436;
+      font-size: 32px;
+      margin-bottom: 40px;
+    }
+
+    .counter-display {
+      font-size: 96px;
+      font-weight: bold;
+      color: #667eea;
+      margin: 40px 0;
+      transition: all 0.3s ease;
+    }
+
+    .counter-display.positive {
+      color: #2ecc71;
+    }
+
+    .counter-display.negative {
+      color: #e74c3c;
+    }
+
+    .counter-display.zero {
+      color: #95a5a6;
+    }
+
+    .counter-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      margin-bottom: 30px;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-family: inherit;
+      min-width: 100px;
+    }
+
+    button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    button:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-increment {
+      background: #2ecc71;
+    }
+
+    .btn-increment:hover {
+      background: #27ae60;
+      box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+    }
+
+    .btn-decrement {
+      background: #e74c3c;
+    }
+
+    .btn-decrement:hover {
+      background: #c0392b;
+      box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+    }
+
+    .btn-reset {
+      background: #95a5a6;
+    }
+
+    .btn-reset:hover {
+      background: #7f8c8d;
+      box-shadow: 0 6px 20px rgba(149, 165, 166, 0.4);
+    }
+
+    .step-controls {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 2px solid #ecf0f1;
+    }
+
+    .step-label {
+      color: #636e72;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    .step-input {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    input[type="number"] {
+      width: 100px;
+      padding: 10px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      text-align: center;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+
+    input[type="number"]:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .stats {
+      margin-top: 30px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 12px;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      color: #636e72;
+      font-size: 14px;
+    }
+
+    .stats-value {
+      font-weight: bold;
+      color: #2d3436;
+      font-size: 16px;
+    }
+
+    @media (max-width: 500px) {
+      .counter-container {
+        min-width: auto;
+        width: 100%;
+        padding: 40px 30px;
+      }
+
+      .counter-display {
+        font-size: 72px;
+      }
+
+      .counter-buttons {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="counter-container">
+      <h1>✨ Counter</h1>
+
+      <!-- Counter Display -->
+      <div 
+        class="counter-display"
+        :class="getCounterClass()"
+      >
+        {{ count }}
+      </div>
+
+      <!-- Main Buttons -->
+      <div class="counter-buttons">
+        <button class="btn-decrement" @click="decrement">
+          ➖ Decrease
+        </button>
+        <button class="btn-reset" @click="reset">
+          🔄 Reset
+        </button>
+        <button class="btn-increment" @click="increment">
+          ➕ Increase
+        </button>
+      </div>
+
+      <!-- Step Controls -->
+      <div class="step-controls">
+        <div class="step-label">Step Size</div>
+        <div class="step-input">
+          <button @click="decreaseStep">−</button>
+          <input 
+            type="number" 
+            z-model="step"
+            min="1"
+            max="100"
+          />
+          <button @click="increaseStep">+</button>
+        </div>
+      </div>
+
+      <!-- Statistics -->
+      <div class="stats">
+        <div class="stats-row">
+          <span>Total Clicks:</span>
+          <span class="stats-value">{{ totalClicks }}</span>
+        </div>
+        <div class="stats-row">
+          <span>Increments:</span>
+          <span class="stats-value">{{ incrementCount }}</span>
+        </div>
+        <div class="stats-row">
+          <span>Decrements:</span>
+          <span class="stats-value">{{ decrementCount }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Zog.js from CDN -->
+  <script type="module">
+    import { createApp, ref, computed } from 'https://cdn.zogjs.com/zog.es.js';
+
+    createApp(() => {
+      // ===========================
+      // STATE
+      // ===========================
+      
+      // Current counter value
+      const count = ref(0);
+      
+      // Step size for increment/decrement
+      const step = ref(1);
+      
+      // Statistics
+      const incrementCount = ref(0);
+      const decrementCount = ref(0);
+
+      // ===========================
+      // COMPUTED PROPERTIES
+      // ===========================
+      
+      // Total number of clicks
+      const totalClicks = computed(() => {
+        return incrementCount.value + decrementCount.value;
+      });
+
+      // ===========================
+      // METHODS
+      // ===========================
+      
+      /**
+       * Increment counter by step value
+       */
+      function increment() {
+        count.value += step.value;
+        incrementCount.value++;
+      }
+      
+      /**
+       * Decrement counter by step value
+       */
+      function decrement() {
+        count.value -= step.value;
+        decrementCount.value++;
+      }
+      
+      /**
+       * Reset counter to zero
+       */
+      function reset() {
+        count.value = 0;
+      }
+      
+      /**
+       * Increase step size
+       */
+      function increaseStep() {
+        if (step.value < 100) {
+          step.value++;
+        }
+      }
+      
+      /**
+       * Decrease step size
+       */
+      function decreaseStep() {
+        if (step.value > 1) {
+          step.value--;
+        }
+      }
+      
+      /**
+       * Get CSS class for counter display based on value
+       * @returns {object} Object with class flags
+       */
+      function getCounterClass() {
+        return {
+          positive: count.value > 0,
+          negative: count.value < 0,
+          zero: count.value === 0
+        };
+      }
+
+      // ===========================
+      // RETURN SCOPE
+      // ===========================
+      
+      return {
+        // State
+        count,
+        step,
+        incrementCount,
+        decrementCount,
+        
+        // Computed
+        totalClicks,
+        
+        // Methods
+        increment,
+        decrement,
+        reset,
+        increaseStep,
+        decreaseStep,
+        getCounterClass
+      };
+    }).mount('#app');
+  </script>
+</body>
+</html>
