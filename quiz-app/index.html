@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zog.js Quiz App</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .quiz-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 700px;
+      padding: 40px;
+    }
+
+    .title {
+      text-align: center;
+      color: #2d3436;
+      margin-bottom: 30px;
+      font-size: 28px;
+    }
+
+    /* Progress Bar */
+    .progress-bar {
+      background: #e9ecef;
+      height: 8px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      text-align: center;
+      color: #636e72;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+
+    /* Question Section */
+    .question-section {
+      margin-bottom: 30px;
+    }
+
+    .question-text {
+      font-size: 22px;
+      color: #2d3436;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    /* Answer Options */
+    .answers {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .answer-btn {
+      background: #f1f3f5;
+      border: 3px solid transparent;
+      border-radius: 12px;
+      padding: 18px 20px;
+      font-size: 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.3s;
+      color: #2d3436;
+    }
+
+    .answer-btn:hover {
+      background: #e9ecef;
+      border-color: #667eea;
+      transform: translateX(5px);
+    }
+
+    .answer-btn.selected {
+      background: #667eea;
+      color: white;
+      border-color: #667eea;
+    }
+
+    .answer-btn.correct {
+      background: #2ecc71;
+      color: white;
+      border-color: #27ae60;
+    }
+
+    .answer-btn.wrong {
+      background: #e74c3c;
+      color: white;
+      border-color: #c0392b;
+    }
+
+    .answer-btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    /* Navigation Buttons */
+    .navigation {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 30px;
+    }
+
+    .nav-btn {
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .nav-btn:hover {
+      background: #5568d3;
+      transform: scale(1.05);
+    }
+
+    .nav-btn:disabled {
+      background: #b2bec3;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Results Section */
+    .results {
+      text-align: center;
+    }
+
+    .score-display {
+      font-size: 48px;
+      font-weight: bold;
+      color: #667eea;
+      margin: 30px 0;
+    }
+
+    .score-message {
+      font-size: 24px;
+      color: #2d3436;
+      margin-bottom: 20px;
+    }
+
+    .score-details {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+
+    .score-details p {
+      font-size: 18px;
+      color: #636e72;
+      margin: 10px 0;
+    }
+
+    .restart-btn {
+      background: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 15px 40px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-top: 20px;
+    }
+
+    .restart-btn:hover {
+      background: #27ae60;
+      transform: scale(1.05);
+    }
+
+    /* Feedback Message */
+    .feedback {
+      padding: 15px;
+      border-radius: 10px;
+      margin-top: 15px;
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .feedback.correct {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .feedback.wrong {
+      background: #f8d7da;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="quiz-container">
+      <h1 class="title">{{ quizTitle }}</h1>
+
+      <!-- Quiz Section: Show when quiz is active -->
+      <div z-if="!showResults">
+        <!-- Progress -->
+        <div class="progress-text">
+          Question {{ currentQuestionIndex + 1 }} of {{ totalQuestions }}
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
+        </div>
+
+        <!-- Current Question -->
+        <div class="question-section">
+          <h2 class="question-text">{{ currentQuestion.question }}</h2>
+
+          <!-- Answer Options -->
+          <div class="answers">
+            <button
+              class="answer-btn"
+              z-for="(answer, index) in currentQuestion.answers"
+              :key="index"
+              :class="getAnswerClass(index)"
+              :disabled="answered"
+              @click="selectAnswer(index)"
+            >
+              {{ answer }}
+            </button>
+          </div>
+
+          <!-- Feedback after answering -->
+          <div class="feedback" z-if="answered" :class="{ correct: isCorrect, wrong: !isCorrect }">
+            <span z-if="isCorrect">✓ Correct! Well done!</span>
+            <span z-else>✗ Wrong! The correct answer was: {{ currentQuestion.answers[currentQuestion.correctIndex] }}</span>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="navigation">
+          <button class="nav-btn" @click="previousQuestion" :disabled="currentQuestionIndex === 0">
+            ← Previous
+          </button>
+          <button class="nav-btn" @click="nextQuestion" :disabled="!answered">
+            <span z-if="currentQuestionIndex < totalQuestions - 1">Next →</span>
+            <span z-else>Finish</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Section: Show when quiz is complete -->
+      <div class="results" z-else>
+        <h2 class="score-message">{{ scoreMessage }}</h2>
+        <div class="score-display">{{ score }} / {{ totalQuestions }}</div>
+        
+        <div class="score-details">
+          <p><strong>Correct Answers:</strong> {{ correctAnswers }}</p>
+          <p><strong>Wrong Answers:</strong> {{ wrongAnswers }}</p>
+          <p><strong>Percentage:</strong> {{ scorePercentage }}%</p>
+        </div>
+
+        <button class="restart-btn" @click="restartQuiz">
+          🔄 Restart Quiz
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Zog.js from CDN -->
+  <script type="module">
+    import { createApp, ref, reactive, computed } from 'https://cdn.zogjs.com/zog.es.js';
+
+    createApp(() => {
+      // ===========================
+      // STATE - Quiz Data
+      // ===========================
+      
+      const quizTitle = ref('JavaScript Quiz');
+      
+      // Current question index (0-based)
+      const currentQuestionIndex = ref(0);
+      
+      // Whether current question has been answered
+      const answered = ref(false);
+      
+      // Index of selected answer
+      const selectedAnswerIndex = ref(null);
+      
+      // Array to track user answers for each question
+      // Each item: { questionIndex, selectedIndex, isCorrect }
+      const userAnswers = reactive([]);
+      
+      // Whether to show results screen
+      const showResults = ref(false);
+      
+      // Quiz questions array
+      // Each question: { question: string, answers: array, correctIndex: number }
+      const questions = reactive([
+        {
+          question: 'What does "const" keyword do in JavaScript?',
+          answers: [
+            'Declares a variable that can be reassigned',
+            'Declares a constant variable that cannot be reassigned',
+            'Declares a function',
+            'Declares a class'
+          ],
+          correctIndex: 1
+        },
+        {
+          question: 'Which method is used to add an element to the end of an array?',
+          answers: [
+            'shift()',
+            'unshift()',
+            'push()',
+            'pop()'
+          ],
+          correctIndex: 2
+        },
+        {
+          question: 'What is the result of: typeof null?',
+          answers: [
+            '"null"',
+            '"undefined"',
+            '"object"',
+            '"number"'
+          ],
+          correctIndex: 2
+        },
+        {
+          question: 'Which operator is used for strict equality comparison?',
+          answers: [
+            '==',
+            '===',
+            '=',
+            '!=='
+          ],
+          correctIndex: 1
+        },
+        {
+          question: 'What does DOM stand for?',
+          answers: [
+            'Document Object Model',
+            'Data Object Model',
+            'Digital Oriented Model',
+            'Document Observation Method'
+          ],
+          correctIndex: 0
+        }
+      ]);
+
+      // ===========================
+      // COMPUTED PROPERTIES
+      // ===========================
+      
+      // Get current question object
+      const currentQuestion = computed(() => {
+        return questions[currentQuestionIndex.value];
+      });
+      
+      // Total number of questions
+      const totalQuestions = computed(() => {
+        return questions.length;
+      });
+      
+      // Progress percentage for progress bar
+      const progressPercentage = computed(() => {
+        return ((currentQuestionIndex.value + 1) / totalQuestions.value) * 100;
+      });
+      
+      // Check if current answer is correct
+      const isCorrect = computed(() => {
+        if (!answered.value) return false;
+        return selectedAnswerIndex.value === currentQuestion.value.correctIndex;
+      });
+      
+      // Calculate total score (number of correct answers)
+      const score = computed(() => {
+        return userAnswers.filter(a => a.isCorrect).length;
+      });
+      
+      // Number of correct answers
+      const correctAnswers = computed(() => {
+        return score.value;
+      });
+      
+      // Number of wrong answers
+      const wrongAnswers = computed(() => {
+        return userAnswers.length - score.value;
+      });
+      
+      // Score percentage
+      const scorePercentage = computed(() => {
+        return Math.round((score.value / totalQuestions.value) * 100);
+      });
+      
+      // Score message based on performance
+      const scoreMessage = computed(() => {
+        const percentage = scorePercentage.value;
+        
+        if (percentage === 100) {
+          return '🎉 Perfect Score! Amazing!';
+        } else if (percentage >= 80) {
+          return '👏 Excellent Work!';
+        } else if (percentage >= 60) {
+          return '👍 Good Job!';
+        } else if (percentage >= 40) {
+          return '🤔 Not Bad, Keep Learning!';
+        } else {
+          return '📚 Keep Studying!';
+        }
+      });
+
+      // ===========================
+      // METHODS - Quiz Logic
+      // ===========================
+      
+      /**
+       * Get CSS class for answer button based on state
+       * @param {number} index - Index of answer option
+       * @returns {string} CSS class string
+       */
+      function getAnswerClass(index) {
+        // If not answered yet, only show if selected
+        if (!answered.value) {
+          return selectedAnswerIndex.value === index ? 'selected' : '';
+        }
+        
+        // After answering, show correct/wrong
+        const isThisCorrect = index === currentQuestion.value.correctIndex;
+        const isThisSelected = index === selectedAnswerIndex.value;
+        
+        // Always show the correct answer in green
+        if (isThisCorrect) {
+          return 'correct';
+        }
+        
+        // Show the wrong selected answer in red
+        if (isThisSelected && !isThisCorrect) {
+          return 'wrong';
+        }
+        
+        return '';
+      }
+      
+      /**
+       * Select an answer option
+       * @param {number} index - Index of selected answer
+       */
+      function selectAnswer(index) {
+        console.log('get index answer:', index);
+        
+        // Prevent re-answering
+        if (answered.value) return;
+        
+        // Mark as answered
+        selectedAnswerIndex.value = index;
+        answered.value = true;
+        
+        // Record answer
+        const correct = index === currentQuestion.value.correctIndex;
+        userAnswers.push({
+          questionIndex: currentQuestionIndex.value,
+          selectedIndex: index,
+          isCorrect: correct
+        });
+      }
+      
+      /**
+       * Move to next question or show results
+       */
+      function nextQuestion() {
+        // Check if we're at the last question
+        if (currentQuestionIndex.value >= totalQuestions.value - 1) {
+          // Show results
+          showResults.value = true;
+        } else {
+          // Move to next question
+          currentQuestionIndex.value++;
+          
+          // Reset answer state for new question
+          answered.value = false;
+          selectedAnswerIndex.value = null;
+        }
+      }
+      
+      /**
+       * Move to previous question
+       */
+      function previousQuestion() {
+        // Check if we can go back
+        if (currentQuestionIndex.value > 0) {
+          currentQuestionIndex.value--;
+          
+          // Load previous answer if it exists
+          const previousAnswer = userAnswers.find(
+            a => a.questionIndex === currentQuestionIndex.value
+          );
+          
+          if (previousAnswer) {
+            answered.value = true;
+            selectedAnswerIndex.value = previousAnswer.selectedIndex;
+          } else {
+            answered.value = false;
+            selectedAnswerIndex.value = null;
+          }
+        }
+      }
+      
+      /**
+       * Restart the quiz from beginning
+       * Resets all state to initial values
+       */
+      function restartQuiz() {
+        currentQuestionIndex.value = 0;
+        answered.value = false;
+        selectedAnswerIndex.value = null;
+        userAnswers.splice(0, userAnswers.length); // Clear array
+        showResults.value = false;
+      }
+
+      // ===========================
+      // RETURN SCOPE
+      // ===========================
+      // All state, computed properties, and methods exposed to template
+      // In templates: refs are auto-unwrapped
+      
+      return {
+        // State
+        quizTitle,
+        currentQuestionIndex,
+        answered,
+        selectedAnswerIndex,
+        showResults,
+        
+        // Computed
+        currentQuestion,
+        totalQuestions,
+        progressPercentage,
+        isCorrect,
+        score,
+        correctAnswers,
+        wrongAnswers,
+        scorePercentage,
+        scoreMessage,
+        
+        // Methods
+        getAnswerClass,
+        selectAnswer,
+        nextQuestion,
+        previousQuestion,
+        restartQuiz
+      };
+    }).mount('#app');
+  </script>
+</body>
+</html>
