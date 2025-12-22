@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zog.js Examples - Interactive Web Applications Built with Minimal Reactive Framework</title>
+  <meta name="description" content="Explore interactive examples and tutorials for Zog.js - a minimal reactive UI framework. Learn through practical demos from simple counters to complex games.">
+  <meta name="keywords" content="Zog.js, reactive framework, JavaScript, web development, examples, tutorials, demo">
+  <meta name="author" content="Zog.js">
+  
+  <!-- Open Graph Meta Tags -->
+  <meta property="og:title" content="Zog.js Examples - Interactive Demos">
+  <meta property="og:description" content="Learn Zog.js through practical examples - from beginner-friendly counters to advanced games like Snake and Memory Game.">
+  <meta property="og:type" content="website">
+  
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #fafafa;
+      min-height: 100vh;
+      padding: 40px 20px;
+      line-height: 1.6;
+      color: #333;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    h1 {
+      font-size: 42px;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .subtitle {
+      font-size: 18px;
+      color: #666;
+    }
+
+    .intro {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 30px;
+      margin-bottom: 50px;
+    }
+
+    .intro h2 {
+      font-size: 20px;
+      margin-bottom: 15px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .intro p {
+      color: #666;
+      font-size: 15px;
+      margin-bottom: 12px;
+    }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .feature {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 6px;
+    }
+
+    .feature h3 {
+      font-size: 15px;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .feature p {
+      color: #666;
+      font-size: 14px;
+      margin: 0;
+    }
+
+    .examples-section {
+      margin-bottom: 50px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .section-header h2 {
+      font-size: 24px;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .section-header p {
+      color: #666;
+      font-size: 15px;
+    }
+
+    .examples-grid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .example-card {
+      background: white;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 25px;
+      width: 100%;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .example-card:hover {
+      border-color: #999;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .example-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    .example-card h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .example-card p {
+      color: #666;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+
+    .example-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      background: #f5f5f5;
+      color: #666;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    footer {
+      text-align: center;
+      color: #999;
+      padding: 40px 20px;
+      margin-top: 50px;
+      font-size: 14px;
+    }
+
+    footer a {
+      color: #666;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      color: #1a1a1a;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 30px 15px;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      .intro {
+        padding: 25px 20px;
+      }
+
+      .features {
+        grid-template-columns: 1fr;
+      }
+
+      .example-card {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🚀 Zog.js Examples</h1>
+      <p class="subtitle">Learn by Building: Interactive Demos & Tutorials</p>
+    </header>
+
+    <!-- Introduction Section -->
+    <section class="intro">
+      <h2>About Zog.js</h2>
+      <p>
+        Zog.js is a small reactive framework for building web interfaces. 
+        It's designed to be simple to learn and use, without requiring complex build tools or configuration.
+      </p>
+      <p>
+        These examples show what you can build with Zog.js. Each one includes commented code 
+        to help you understand how things work.
+      </p>
+
+      <div class="features">
+        <div class="feature">
+          <h3>Reactive Updates</h3>
+          <p>UI updates automatically when data changes</p>
+        </div>
+        <div class="feature">
+          <h3>Small Library</h3>
+          <p>Lightweight and fast to load</p>
+        </div>
+        <div class="feature">
+          <h3>Easy to Learn</h3>
+          <p>Simple API with clear patterns</p>
+        </div>
+        <div class="feature">
+          <h3>No Build Step</h3>
+          <p>Import and start coding right away</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Beginner Examples -->
+    <section class="examples-section">
+      <div class="section-header">
+        <h2>🌱 Getting Started</h2>
+        <p>Good starting points if you're new to Zog.js</p>
+      </div>
+
+      <div class="examples-grid">
+        <a href="/examples/simple-counter/" class="example-card">
+          <div class="example-icon">🔢</div>
+          <h3>Simple Counter</h3>
+          <p>A basic counter to learn the fundamentals. Good place to start if you're new to reactive frameworks.</p>
+          <div class="example-tags">
+            <span class="tag">ref</span>
+            <span class="tag">events</span>
+          </div>
+        </a>
+
+        <a href="/examples/counter/" class="example-card">
+          <div class="example-icon">➕</div>
+          <h3>Counter with Features</h3>
+          <p>Same counter but with more features like step controls and statistics. Shows computed properties and two-way binding.</p>
+          <div class="example-tags">
+            <span class="tag">computed</span>
+            <span class="tag">z-model</span>
+          </div>
+        </a>
+
+        <a href="/examples/calculator/" class="example-card">
+          <div class="example-icon">🧮</div>
+          <h3>Calculator</h3>
+          <p>A working calculator with basic operations. Demonstrates organizing methods and handling user input.</p>
+          <div class="example-tags">
+            <span class="tag">state</span>
+            <span class="tag">methods</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Intermediate Examples -->
+    <section class="examples-section">
+      <div class="section-header">
+        <h2>🚀 Next Steps</h2>
+        <p>More features and patterns to explore</p>
+      </div>
+
+      <div class="examples-grid">
+        <a href="/examples/todo-list/" class="example-card">
+          <div class="example-icon">✅</div>
+          <h3>Todo List</h3>
+          <p>A todo app with labels and filtering. Shows how to work with lists and handle relationships between data.</p>
+          <div class="example-tags">
+            <span class="tag">reactive</span>
+            <span class="tag">z-for</span>
+            <span class="tag">lists</span>
+          </div>
+        </a>
+
+        <a href="/examples/quiz-app/" class="example-card">
+          <div class="example-icon">📝</div>
+          <h3>Quiz App</h3>
+          <p>A quiz with multiple questions, scoring, and navigation. Learn about conditional rendering and navigation.</p>
+          <div class="example-tags">
+            <span class="tag">z-if</span>
+            <span class="tag">computed</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Advanced Examples -->
+    <section class="examples-section">
+      <div class="section-header">
+        <h2>🎮 Games & Complex Apps</h2>
+        <p>See what's possible with more complex logic</p>
+      </div>
+
+      <div class="examples-grid">
+        <a href="/examples/memory-game/" class="example-card">
+          <div class="example-icon">🧠</div>
+          <h3>Memory Game</h3>
+          <p>A card matching game. Covers animations, timing, and managing game state.</p>
+          <div class="example-tags">
+            <span class="tag">game</span>
+            <span class="tag">animations</span>
+          </div>
+        </a>
+
+        <a href="/examples/snake-game/" class="example-card">
+          <div class="example-icon">🐍</div>
+          <h3>Snake Game</h3>
+          <p>Classic snake game with keyboard controls. An example of handling complex state and game loops.</p>
+          <div class="example-tags">
+            <span class="tag">game</span>
+            <span class="tag">keyboard</span>
+          </div>
+        </a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <p>
+        Built with ❤️ using <a href="https://zogjs.com" target="_blank">Zog.js</a>
+      </p>
+      <p style="margin-top: 10px; font-size: 14px; opacity: 0.9;">
+        View the <a href="https://docs.zogjs.com" target="_blank">Documentation</a> | 
+        <a href="https://github.com/zogjs/zog" target="_blank">GitHub</a>
+      </p>
+    </footer>
+  </div>
+</body>
+</html>
