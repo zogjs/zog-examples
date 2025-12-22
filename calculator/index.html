@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zog.js Calculator</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .calculator {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      width: 100%;
+      max-width: 350px;
+      padding: 25px;
+    }
+
+    .display {
+      background: #2d3436;
+      color: white;
+      padding: 25px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      text-align: right;
+      word-wrap: break-word;
+      min-height: 80px;
+    }
+
+    .previous-operand {
+      font-size: 18px;
+      color: #b2bec3;
+      min-height: 25px;
+    }
+
+    .current-operand {
+      font-size: 32px;
+      font-weight: bold;
+      margin-top: 5px;
+      min-height: 40px;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 25px;
+      font-size: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: #f1f3f5;
+      color: #2d3436;
+    }
+
+    button:hover {
+      background: #e9ecef;
+      transform: scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    .operator {
+      background: #667eea;
+      color: white;
+    }
+
+    .operator:hover {
+      background: #5568d3;
+    }
+
+    .clear {
+      background: #e74c3c;
+      color: white;
+      grid-column: span 2;
+    }
+
+    .clear:hover {
+      background: #c0392b;
+    }
+
+    .equals {
+      background: #2ecc71;
+      color: white;
+      grid-column: span 2;
+    }
+
+    .equals:hover {
+      background: #27ae60;
+    }
+
+    .zero {
+      grid-column: span 2;
+    }
+
+    .title {
+      text-align: center;
+      color: #2d3436;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="calculator">
+      <h1 class="title">{{ title }}</h1>
+      
+      <!-- Display Screen -->
+      <div class="display">
+        <div class="previous-operand">{{ previousOperand }}</div>
+        <div class="current-operand">{{ currentOperand }}</div>
+      </div>
+
+      <!-- Calculator Buttons -->
+      <div class="buttons">
+        <!-- Clear button -->
+        <button class="clear" @click="clear">AC</button>
+        
+        <!-- Delete button -->
+        <button @click="deleteDigit">DEL</button>
+        
+        <!-- Divide operator -->
+        <button class="operator" @click="chooseOperation('÷')">÷</button>
+        
+        <!-- Number buttons 7-9 -->
+        <button @click="appendNumber('7')">7</button>
+        <button @click="appendNumber('8')">8</button>
+        <button @click="appendNumber('9')">9</button>
+        
+        <!-- Multiply operator -->
+        <button class="operator" @click="chooseOperation('×')">×</button>
+        
+        <!-- Number buttons 4-6 -->
+        <button @click="appendNumber('4')">4</button>
+        <button @click="appendNumber('5')">5</button>
+        <button @click="appendNumber('6')">6</button>
+        
+        <!-- Subtract operator -->
+        <button class="operator" @click="chooseOperation('-')">-</button>
+        
+        <!-- Number buttons 1-3 -->
+        <button @click="appendNumber('1')">1</button>
+        <button @click="appendNumber('2')">2</button>
+        <button @click="appendNumber('3')">3</button>
+        
+        <!-- Add operator -->
+        <button class="operator" @click="chooseOperation('+')">+</button>
+        
+        <!-- Zero button (spans 2 columns) -->
+        <button class="zero" @click="appendNumber('0')">0</button>
+        
+        <!-- Decimal point -->
+        <button @click="appendNumber('.')">.</button>
+        
+        <!-- Equals button (spans 2 columns) -->
+        <button class="equals" @click="compute">=</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Zog.js from CDN -->
+  <script type="module">
+    import { createApp, ref, computed } from 'https://cdn.zogjs.com/zog.es.js';
+
+    createApp(() => {
+      // ===========================
+      // STATE - Calculator Data
+      // ===========================
+      
+      const title = ref('Calculator');
+      
+      // Current number being typed
+      const currentOperand = ref('0');
+      
+      // Previous number and operation
+      const previousOperand = ref('');
+      
+      // Current operation (+, -, ×, ÷)
+      const operation = ref(null);
+
+      // ===========================
+      // METHODS - Calculator Logic
+      // ===========================
+      
+      /**
+       * Clear all calculator state
+       * Resets everything to initial values
+       */
+      function clear() {
+        currentOperand.value = '0';
+        previousOperand.value = '';
+        operation.value = null;
+      }
+      
+      /**
+       * Delete the last digit from current operand
+       * If only one digit remains, set to '0'
+       */
+      function deleteDigit() {
+        // If current is '0' or empty, do nothing
+        if (currentOperand.value === '0' || currentOperand.value === '') {
+          return;
+        }
+        
+        // Remove last character
+        currentOperand.value = currentOperand.value.slice(0, -1);
+        
+        // If empty after deletion, set to '0'
+        if (currentOperand.value === '') {
+          currentOperand.value = '0';
+        }
+      }
+      
+      /**
+       * Append a number or decimal point to current operand
+       * @param {string} number - The digit or '.' to append
+       */
+      function appendNumber(number) {
+        // Prevent multiple decimal points
+        if (number === '.' && currentOperand.value.includes('.')) {
+          return;
+        }
+        
+        // If current is '0' and we're not adding a decimal
+        // Replace '0' with the new number
+        if (currentOperand.value === '0' && number !== '.') {
+          currentOperand.value = number;
+          return;
+        }
+        
+        // Otherwise append the number
+        currentOperand.value = currentOperand.value + number;
+      }
+      
+      /**
+       * Choose an operation (+, -, ×, ÷)
+       * @param {string} op - The operation symbol
+       */
+      function chooseOperation(op) {
+        // If current is empty, do nothing
+        if (currentOperand.value === '') {
+          return;
+        }
+        
+        // If there's a previous operation, compute it first
+        if (previousOperand.value !== '') {
+          compute();
+        }
+        
+        // Set the operation
+        operation.value = op;
+        
+        // Move current to previous
+        previousOperand.value = currentOperand.value + ' ' + op;
+        currentOperand.value = '0';
+      }
+      
+      /**
+       * Compute the result of the operation
+       * Performs calculation based on operation type
+       */
+      function compute() {
+        // Need both operands and an operation
+        if (previousOperand.value === '' || operation.value === null) {
+          return;
+        }
+        
+        // Extract the previous number (remove operation symbol)
+        const prev = parseFloat(previousOperand.value);
+        const current = parseFloat(currentOperand.value);
+        
+        // Check for valid numbers
+        if (isNaN(prev) || isNaN(current)) {
+          return;
+        }
+        
+        let result;
+        
+        // Perform calculation based on operation
+        switch (operation.value) {
+          case '+':
+            result = prev + current;
+            break;
+          case '-':
+            result = prev - current;
+            break;
+          case '×':
+            result = prev * current;
+            break;
+          case '÷':
+            // Prevent division by zero
+            if (current === 0) {
+              currentOperand.value = 'Error';
+              previousOperand.value = '';
+              operation.value = null;
+              return;
+            }
+            result = prev / current;
+            break;
+          default:
+            return;
+        }
+        
+        // Round to avoid floating point errors
+        // Keep maximum 10 decimal places
+        result = Math.round(result * 10000000000) / 10000000000;
+        
+        // Update display
+        currentOperand.value = result.toString();
+        previousOperand.value = '';
+        operation.value = null;
+      }
+
+      // ===========================
+      // RETURN SCOPE
+      // ===========================
+      // All state and methods exposed to template
+      // Remember: refs are auto-unwrapped in templates
+      
+      return {
+        // State
+        title,
+        currentOperand,
+        previousOperand,
+        
+        // Methods
+        clear,
+        deleteDigit,
+        appendNumber,
+        chooseOperation,
+        compute
+      };
+    }).mount('#app');
+  </script>
+</body>
+</html>
