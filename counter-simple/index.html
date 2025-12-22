@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Counter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      color: #333;
+      margin-bottom: 30px;
+    }
+
+    .counter {
+      font-size: 72px;
+      font-weight: bold;
+      color: #667eea;
+      margin: 20px 0;
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    button:hover {
+      background: #5568d3;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <h1>Simple Counter</h1>
+      
+      <!-- Display the counter value -->
+      <div class="counter">{{ count }}</div>
+      
+      <!-- Buttons to control the counter -->
+      <div>
+        <button @click="decrease">-</button>
+        <button @click="reset">Reset</button>
+        <button @click="increase">+</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import Zog.js from CDN -->
+  <script type="module">
+    // Import Zog.js functions
+    import { createApp, ref } from 'https://cdn.zogjs.com/zog.es.js';
+
+    // Create the app
+    createApp(() => {
+      // Create a reactive counter (starts at 0)
+      const count = ref(0);
+
+      // Function to increase counter
+      function increase() {
+        count.value++;
+      }
+
+      // Function to decrease counter
+      function decrease() {
+        count.value--;
+      }
+
+      // Function to reset counter
+      function reset() {
+        count.value = 0;
+      }
+
+      // Return data and functions to use in HTML
+      return {
+        count,
+        increase,
+        decrease,
+        reset
+      };
+    }).mount('#app');
+  </script>
+</body>
+</html>
