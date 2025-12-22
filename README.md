@@ -6,7 +6,7 @@ A collection of example applications built with [Zog.js](https://zogjs.com).
 
 ### 🌱 Getting Started
 
-- **[Simple Counter](./simple-counter/index.html)** - A basic counter to learn the fundamentals
+- **[Simple Counter](./counter-simple/index.html)** - A basic counter to learn the fundamentals
 - **[Counter](./counter/index.html)** - Counter with step controls and statistics
 - **[Calculator](./calculator/index.html)** - A working calculator with basic operations
 
