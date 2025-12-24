@@ -220,7 +220,7 @@
           z-for="card in cards"
           :key="card.id"
           :class="{ flipped: card.isFlipped, matched: card.isMatched }"
-          @click="flipCard(card.value.id)"
+          @click="flipCard(card.id)"
         >
           <div class="card-face card-back">❓</div>
           <div class="card-face card-front">{{ card.emoji }}</div>
@@ -238,7 +238,7 @@
 
   <!-- Import Zog.js from CDN -->
   <script type="module">
-    import { createApp, ref, reactive, computed } from 'https://cdn.zogjs.com/zog.es.js';
+    import { createApp, ref, reactive, computed } from 'https://cdn.zogjs.com/0.4.7/zog.js';
 
     createApp(() => {
       // ===========================
@@ -340,6 +340,8 @@
        * @param {number} cardId - ID of card to flip
        */
       function flipCard(cardId) {
+        console.log('cardId:', cardId);
+        
         // Prevent flipping during checking
         if (isChecking.value) return;
         

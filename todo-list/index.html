@@ -339,7 +339,7 @@
             <span>{{ label.name }}</span>
             <button 
               class="btn-small btn-danger" 
-              @click="removeLabel(label.value.id)"
+              @click="removeLabel(label.id)"
             >×</button>
           </div>
         </div>
@@ -369,7 +369,7 @@
             type="checkbox" 
             class="todo-checkbox"
             :checked="todo.completed"
-            @change="toggleTodo(todo.value.id)"
+            @change="toggleTodo(todo.id)"
           />
           
           <div class="todo-content">
@@ -392,7 +392,7 @@
                 {{ getLabelName(labelId) }}
                 <button 
                   class="btn-small" 
-                  @click="removeLabelFromTodo(todo.value.id, labelId)"
+                  @click="removeLabelFromTodo(todo.id, labelId)"
                   style="background: rgba(0,0,0,0.2)"
                 >×</button>
               </span>
@@ -402,7 +402,7 @@
             <div z-if="labels.length > 0">
               <select 
                 class="label-select"
-                @change="addLabelToTodo(todo.value.id, e.target.value); e.target.value = ''"
+                @change="addLabelToTodo(todo.id, e.target.value); e.target.value = ''"
               >
                 <option value="">+ Add label</option>
                 <option 
@@ -419,7 +419,7 @@
           <!-- Delete button -->
           <button 
             class="btn-small btn-danger" 
-            @click="removeTodo(todo.value.id)"
+            @click="removeTodo(todo.id)"
           >🗑️</button>
         </div>
       </div>
@@ -438,7 +438,7 @@
 
   <!-- Import Zog.js from CDN -->
   <script type="module">
-    import { createApp, ref, reactive, computed } from 'https://cdn.zogjs.com/zog.es.js';
+    import { createApp, ref, reactive, computed } from 'https://cdn.zogjs.com/0.4.7/zog.js';
 
     createApp(() => {
       // ===========================
@@ -618,17 +618,7 @@
         return label ? label.color : '#999';
       }
 
-      // ===========================
-      // RETURN SCOPE
-      // ===========================
-      // All state and methods must be returned to be accessible in template
-      // Note: In templates, refs are auto-unwrapped (use {{ newTodo }} not {{ newTodo.value }})
-      // Note: In z-for, index is a plain number, item is a ref
-      // IMPORTANT: Always use todo.value.id (not index) for operations because:
-      //   - Indices change when items are removed
-      //   - IDs are stable and unique
-      //   - In event handlers, z-for items are refs, so use .value to access properties
-      
+
       return {
         // State
         appTitle,
